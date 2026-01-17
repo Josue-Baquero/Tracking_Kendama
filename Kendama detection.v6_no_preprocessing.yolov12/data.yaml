@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['kendama_ball']
+
+roboflow:
+  workspace: first-project-kendama-dataset
+  project: kendama-detection
+  version: 6
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/first-project-kendama-dataset/kendama-detection/dataset/6
