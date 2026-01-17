@@ -37,7 +37,7 @@ def train_kendama_model():
     print()
     
     # Chemin vers le fichier de configuration du dataset
-    data_yaml = Path("Kendama detection.v6_no_preprocessing.yolov12/data.yaml")
+    data_yaml = Path("Kendama_detection.v6_no_preprocessing.yolov12/data.yaml")
     if not data_yaml.exists():
         print(f"❌ Fichier de configuration non trouvé: {data_yaml}")
         return
