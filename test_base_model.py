@@ -256,8 +256,6 @@ def test_all_videos(model_path="yolo12l.pt", conf_threshold=0.25, output_dir="pr
             print(f"   ✅ Terminé: {video.name}")
             print(f"   📊 {frames_with_ball}/{total_frames} frames ({detection_rate:.1f}%) - {total_detections} détections")
             
-        except subprocess.CalledProcessError as e:
-            print(f"   ❌ Erreur lors du test de {video.name}")
         except KeyboardInterrupt:
             print("\n\n⚠️  Test interrompu par l'utilisateur")
             break
