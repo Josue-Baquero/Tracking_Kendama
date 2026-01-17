@@ -49,7 +49,7 @@ def train_kendama_model():
     print("⚙️  Paramètres d'entraînement:")
     epochs = 100
     imgsz = 640
-    batch = 16
+    batch = 4
     patience = 20
     
     print(f"   - Epochs: {epochs}")
@@ -82,7 +82,7 @@ def train_kendama_model():
             device=device,
             patience=patience,
             save=True,
-            project="runs/train",
+            project="runs",
             name="kendama_finetuned",
             exist_ok=True,
             pretrained=True,
