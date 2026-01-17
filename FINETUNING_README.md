@@ -1,15 +1,17 @@
 # 🎯 Tracking Kendama - Fine-tuning Guide
 
-## 📊 Dataset Kendama Detection v3
+## 📊 Dataset Kendama Detection v6
 
 **Structure du dataset:**
 - **Train:** 300 images (251 avec balle, 49 sans balle)
-- **Valid:** 50 images
-- **Total:** 350 images annotées
+- **Valid:** 50 images (42 avec balle, 8 sans balle)
+- **Test:** 15 images
+- **Total:** 365 images annotées
 - **Classe:** 1 classe (`kendama_ball`)
 - **Format:** YOLO (bounding boxes normalisées)
+- **Version:** v6 - no preprocessing (images brutes)
 
-**Localisation:** `Kendama detection.v3i.yolov12/`
+**Localisation:** `Kendama_detection.v6_no_preprocessing.yolov12/`
 
 ## 🔧 Workflow de Fine-tuning
 
@@ -61,14 +63,17 @@ Tracking_Kendama/
 │
 ├── yolo12l.pt                          # Modèle de base (PRÉSERVÉ)
 │
-├── Kendama detection.v3i.yolov12/     # Dataset annoté
+├── Kendama_detection.v6_no_preprocessing.yolov12/     # Dataset annoté v6
 │   ├── data.yaml                       # Configuration du dataset
 │   ├── train/
 │   │   ├── images/                     # 300 images d'entraînement
 │   │   └── labels/                     # 300 fichiers de labels
-│   └── valid/
-│       ├── images/                     # 50 images de validation
-│       └── labels/                     # 50 fichiers de labels
+│   ├── valid/
+│   │   ├── images/                     # 50 images de validation
+│   │   └── labels/                     # 50 fichiers de labels
+│   └── test/
+│       ├── images/                     # 15 images de test
+│       └── labels/                     # 15 fichiers de labels
 │
 ├── videos/                             # Vidéos à tester
 │
@@ -147,7 +152,7 @@ Pendant l'entraînement, surveillez:
 Ces fichiers/dossiers sont **PRÉSERVÉS** et ne seront pas modifiés:
 - ✅ `yolo12l.pt` (modèle de base)
 - ✅ `pretrained_test/` (résultats du modèle de base)
-- ✅ `Kendama detection.v3i.yolov12/` (dataset annoté)
+- ✅ `Kendama_detection.v6_no_preprocessing.yolov12/` (dataset annoté v6)
 
 ## 🎬 Vidéos de test
 

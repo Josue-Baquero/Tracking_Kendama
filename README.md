@@ -49,7 +49,7 @@ Tracking_Kendama/
 │   └── finetuned_test/                 # Résultats modèle fine-tuné
 │
 ├── 📊 Dataset
-│   └── Kendama detection.v3i.yolov12/  # 350 images annotées (train + valid)
+│   └── Kendama_detection.v6_no_preprocessing.yolov12/  # 365 images (train + valid + test)
 │
 ├── 🔧 Scripts principaux
 │   ├── finetune_model.py               # Entraîner le modèle
@@ -124,13 +124,15 @@ python track_and_recenter.py
 ## 📊 Dataset Kendama
 
 **Statistiques:**
-- **Total:** 350 images annotées
+- **Total:** 365 images annotées
 - **Train:** 300 images (251 avec balle, 49 sans balle)
-- **Validation:** 50 images
+- **Validation:** 50 images (42 avec balle, 8 sans balle)
+- **Test:** 15 images
 - **Classe:** 1 classe unique (`kendama_ball`)
 - **Format:** YOLO (bounding boxes normalisées)
+- **Version:** v6 (no preprocessing)
 
-**Source:** Roboflow - Kendama Detection v3
+**Source:** Roboflow - Kendama Detection v6
 
 ## 🔍 Commandes avancées
 
