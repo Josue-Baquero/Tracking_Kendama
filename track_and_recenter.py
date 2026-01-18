@@ -1,6 +1,8 @@
 """
 Recentrage vidéo avec détection de la balle du kendama
 Tracking avec interpolation et smoothing pour un recentrage fluide
+Par défaut: traite toutes les vidéos du dossier videos/
+Avec argument: traite une vidéo spécifique
 Une seule classe: Ball
 """
 
@@ -8,7 +10,7 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 from pathlib import Path
-import sys
+import argparse
 
 def interpolate_missing_positions(positions):
     """
@@ -78,11 +80,12 @@ def smooth_trajectory(positions, window_size=5):
     return smoothed
 
 
-def recenter_video(video_path, model_path, conf_threshold=0.3, smooth_window=7, output_size=1080, show_center_circle=True):
+def recenter_video(video_path, model_path, conf_threshold=0.3, smooth_window=7, output_size=1080, show_center_circle=True, output_dir="recentered"):
     """
     Recentre la vidéo sur la balle détectée
     output_size: taille de sortie en pixels (carré, ex: 1080 pour 1080x1080)
     show_center_circle: affiche un cercle vert au centre pour visualiser le point de centrage
+    output_dir: dossier de sortie pour les vidéos recentrées
     """
     print("="*80)
     print("RECENTRAGE VIDÉO YOLOV12")
@@ -174,7 +177,7 @@ def recenter_video(video_path, model_path, conf_threshold=0.3, smooth_window=7, 
     # === PASSE 4: Génération vidéo recentrée ===
     print("\nPasse 4: Génération de la vidéo recentrée...")
     
-    output_dir = Path("recentered_yolov12")
+    output_dir = Path(output_dir)
     output_dir.mkdir(exist_ok=True)
     output_path = output_dir / f"{Path(video_path).stem}_recentered.mp4"
     
@@ -246,34 +249,177 @@ def recenter_video(video_path, model_path, conf_threshold=0.3, smooth_window=7, 
     print(f"\n✅ Vidéo recentrée sauvegardée: {output_path}")
     print(f"   Frames avec tracking valide: {valid_frames}/{total_frames} ({valid_frames/total_frames*100:.1f}%)")
     print("="*80)
+    
+    return True
+
+
+def recenter_all_videos(model_path, conf_threshold=0.3, smooth_window=7, output_size=1080, show_center_circle=True, output_dir="recentered"):
+    """Recentre toutes les vidéos du dossier videos/"""
+    
+    videos_dir = Path("videos")
+    if not videos_dir.exists():
+        print("❌ Le dossier videos/ n'existe pas")
+        return
+    
+    videos = list(videos_dir.glob("*.mp4"))
+    if not videos:
+        print("❌ Aucune vidéo trouvée dans videos/")
+        return
+    
+    print("="*80)
+    print(f"RECENTRAGE DE {len(videos)} VIDÉOS")
+    print("="*80)
+    print(f"Modèle: {model_path}")
+    print(f"Confiance: {conf_threshold}")
+    print(f"Lissage: {smooth_window}")
+    print(f"Taille: {output_size}x{output_size}px")
+    print(f"Cercle: {'Oui' if show_center_circle else 'Non'}")
+    print()
+    print("Vidéos à traiter:")
+    for i, video in enumerate(videos, 1):
+        print(f"  {i}. {video.name}")
+    print()
+    
+    # Demander confirmation
+    response = input("🚀 Lancer le recentrage sur toutes ces vidéos? (o/n): ").lower()
+    if response not in ['o', 'oui', 'y', 'yes']:
+        print("❌ Recentrage annulé")
+        return
+    
+    print()
+    print("="*80)
+    print("DÉBUT DU RECENTRAGE")
+    print("="*80)
+    
+    # Créer le dossier de sortie
+    output_dir_path = Path(output_dir)
+    output_dir_path.mkdir(exist_ok=True)
+    
+    successful = 0
+    failed = 0
+    
+    for i, video in enumerate(videos, 1):
+        print()
+        print(f"\n[{i}/{len(videos)}] 🎬 Traitement: {video.name}")
+        print("="*80)
+        
+        try:
+            success = recenter_video(
+                str(video),
+                model_path,
+                conf_threshold,
+                smooth_window,
+                output_size,
+                show_center_circle,
+                output_dir
+            )
+            
+            if success:
+                successful += 1
+            else:
+                failed += 1
+                
+        except KeyboardInterrupt:
+            print("\n\n⚠️  Recentrage interrompu par l'utilisateur")
+            break
+        except Exception as e:
+            print(f"\n❌ Erreur: {e}")
+            failed += 1
+    
+    # Résumé
+    print()
+    print("="*80)
+    print("RÉSUMÉ DU RECENTRAGE")
+    print("="*80)
+    print(f"✅ Vidéos traitées avec succès: {successful}")
+    if failed > 0:
+        print(f"❌ Vidéos échouées: {failed}")
+    print()
+    print(f"📁 Vidéos recentrées dans: {output_dir_path.absolute()}")
+    print("="*80)
 
 
 if __name__ == '__main__':
-    # Configuration
-    MODEL_PATH = "runs/detect/kendama_yolov12l_baseline/weights/best.pt"
-    VIDEOS_DIR = Path("videos")
+    parser = argparse.ArgumentParser(
+        description="Recentrage vidéo avec détection de la balle",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Exemples d'utilisation:
+
+  # Recentrer TOUTES les vidéos (mode par défaut)
+  python track_and_recenter.py
+  
+  # Recentrer UNE vidéo spécifique
+  python track_and_recenter.py videos/IMG_4535.mp4
+  python track_and_recenter.py IMG_Drama.mp4
+  
+  # Avec paramètres personnalisés
+  python track_and_recenter.py IMG_4535.mp4 --conf 0.25 --smooth 9 --size 720
+  python track_and_recenter.py --size 1080 --no-circle
+        """
+    )
     
-    if len(sys.argv) < 2:
-        print("Usage: python recenter_yolov12.py <video_file> [conf_threshold] [smooth_window] [output_size] [show_circle]")
-        print(f"\nExemple: python recenter_yolov12.py IMG_4535.mp4")
-        print(f"         python recenter_yolov12.py IMG_4535.mp4 0.3 9 1080")
-        print(f"         python recenter_yolov12.py IMG_4535.mp4 0.25 7 720 False  (720p sans cercle)")
-        print(f"\nParamètres par défaut: conf=0.3, smooth=7, size=1080px, circle=True")
-        print(f"\nNote: Les vidéos sont cherchées dans le dossier 'videos/'")
-        sys.exit(1)
+    parser.add_argument('video', type=str, nargs='?', default=None,
+                       help='Vidéo spécifique à recentrer (optionnel, si absent = toutes les vidéos)')
+    parser.add_argument('--model', '-m', type=str, default='runs/kendama_finetuned/weights/best.pt',
+                       help='Modèle à utiliser (défaut: modèle fine-tuné)')
+    parser.add_argument('--conf', '-c', type=float, default=0.3,
+                       help='Seuil de confiance (défaut: 0.3)')
+    parser.add_argument('--smooth', '-s', type=int, default=7,
+                       help='Fenêtre de lissage (défaut: 7)')
+    parser.add_argument('--size', type=int, default=1080,
+                       help='Taille de sortie en pixels (défaut: 1080)')
+    parser.add_argument('--no-circle', action='store_true',
+                       help='Ne pas afficher le cercle de centrage')
+    parser.add_argument('--output', '-o', type=str, default='recentered',
+                       help='Dossier de sortie (défaut: recentered)')
     
-    # Construire le chemin de la vidéo
-    video_input = sys.argv[1]
-    video_path_obj = Path(video_input)
+    args = parser.parse_args()
     
-    # Si le chemin n'existe pas et n'est qu'un nom de fichier, chercher dans videos/
-    if not video_path_obj.exists() and not video_path_obj.is_absolute():
-        video_path_obj = VIDEOS_DIR / video_input
+    # Vérifier que le modèle existe
+    model_path = Path(args.model)
+    if not model_path.exists():
+        print("❌ Modèle non trouvé!")
+        print(f"   Attendu: {model_path}")
+        print()
+        print("💡 Veuillez d'abord entraîner le modèle avec:")
+        print("   python finetune_model.py")
+        exit(1)
     
-    video_path = str(video_path_obj)
-    conf_threshold = float(sys.argv[2]) if len(sys.argv) > 2 else 0.3
-    smooth_window = int(sys.argv[3]) if len(sys.argv) > 3 else 7
-    output_size = int(sys.argv[4]) if len(sys.argv) > 4 else 1080
-    show_center_circle = sys.argv[5].lower() in ['true', '1', 'yes', 'oui'] if len(sys.argv) > 5 else True
+    show_circle = not args.no_circle
     
-    recenter_video(video_path, MODEL_PATH, conf_threshold, smooth_window, output_size, show_center_circle)
+    if args.video:
+        # Mode vidéo unique
+        video_input = args.video
+        video_path_obj = Path(video_input)
+        
+        # Si le chemin n'existe pas et n'est qu'un nom de fichier, chercher dans videos/
+        if not video_path_obj.exists() and not video_path_obj.is_absolute():
+            video_path_obj = Path("videos") / video_input
+        
+        if not video_path_obj.exists():
+            print(f"❌ Vidéo non trouvée: {video_input}")
+            exit(1)
+        
+        success = recenter_video(
+            str(video_path_obj),
+            str(model_path),
+            args.conf,
+            args.smooth,
+            args.size,
+            show_circle,
+            args.output
+        )
+        
+        exit(0 if success else 1)
+    else:
+        # Mode toutes les vidéos
+        recenter_all_videos(
+            str(model_path),
+            args.conf,
+            args.smooth,
+            args.size,
+            show_circle,
+            args.output
+        )
+        exit(0)
