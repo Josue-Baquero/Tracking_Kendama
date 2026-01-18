@@ -49,7 +49,7 @@ def test_single_video(video_file, model_path, conf_threshold=0.25, output_dir="f
             source=str(video_path),
             save=True,
             project=str(output_dir),
-            name=video_path.stem,
+            name='predict',
             exist_ok=True,
             conf=conf_threshold,
             iou=0.45,
@@ -79,7 +79,7 @@ def test_single_video(video_file, model_path, conf_threshold=0.25, output_dir="f
         print(f"   Taux de détection: {detection_rate:.1f}%")
         print(f"   Détections/frame: {total_detections/total_frames:.2f}")
         print()
-        print(f"📁 Vidéo sauvegardée: {output_dir / video_path.stem}")
+        print(f"📁 Vidéo sauvegardée dans: {output_dir}/")
         
         return True
         
@@ -88,8 +88,6 @@ def test_single_video(video_file, model_path, conf_threshold=0.25, output_dir="f
         return False
 
 
-def test_all_videos(model_path, conf_threshold=0.25, output_dir="finetuned_test"):
-    """Teste le modèle fine-tuné sur toutes les vidéos"""
 def test_all_videos(model_path, conf_threshold=0.25, output_dir="finetuned_test"):
     """Teste le modèle fine-tuné sur toutes les vidéos"""
     
@@ -151,7 +149,7 @@ def test_all_videos(model_path, conf_threshold=0.25, output_dir="finetuned_test"
                 source=str(video),
                 save=True,
                 project=str(output_dir),
-                name=video.stem,
+                name='predict',
                 exist_ok=True,
                 conf=conf_threshold,
                 iou=0.45,
@@ -241,7 +239,7 @@ def test_all_videos(model_path, conf_threshold=0.25, output_dir="finetuned_test"
 
 def main():
     # Vérifier que le modèle fine-tuné existe
-    default_model = Path("runs/train/kendama_finetuned/weights/best.pt")
+    default_model = Path("runs/kendama_finetuned/weights/best.pt")
     
     parser = argparse.ArgumentParser(
         description="Test du modèle fine-tuné sur les vidéos",
@@ -257,7 +255,7 @@ Exemples d'utilisation:
   python test_finetuned_model.py IMG_Drama.mp4
   
   # Avec un modèle spécifique
-  python test_finetuned_model.py --model runs/train/kendama_finetuned2/weights/best.pt
+  python test_finetuned_model.py --model runs/kendama_finetuned2/weights/best.pt
   
   # Avec un seuil de confiance différent
   python test_finetuned_model.py --conf 0.5
